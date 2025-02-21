@@ -1,3 +1,4 @@
+.DS_Store
 # Ignore Python cache & environment
 __pycache__/
 *.pyc
@@ -23,5 +24,3 @@ docker-compose.override.yml
 
 # Ignore Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
-
-.DS_Store
