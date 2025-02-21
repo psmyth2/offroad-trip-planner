@@ -5,16 +5,21 @@ import json
 from arcgis.gis import GIS
 from arcgis.features import FeatureLayer
 from arcgis.geometry.filters import intersects
+from app.reference_layers import trails_roads
 from app.reference_layers import reference_layers
 
 class DataFetcher:
     def __init__(self):
         """Initialize DataFetcher with GIS connection and output paths."""
         self.logger = logging.getLogger(__name__)
-        self.gis = GIS()  # Public ArcGIS Online
+        self.gis = GIS()
+        self.trails = trails_roads
         self.reference_layers = reference_layers
         self.data_raw_path = "data/raw"
         os.makedirs(self.data_raw_path, exist_ok=True)
+
+    def process_selected_trails(self, trail_list):
+        print(trail_list)
 
     def fetch_feature_layer(self, layer, bbox):
         """Fetches data from an Esri Feature Layer based on user BBOX."""
@@ -29,7 +34,7 @@ class DataFetcher:
             }
             
             query_filter = intersects(bbox_dict, sr=wkid)
-            features = feature_layer.query(geometry_filter=query_filter, out_sr=wkid, out_fields=layer['field'])
+            features = feature_layer.query(geometry_filter=query_filter, out_sr=wkid, out_fields=layer['fields'])
 
             # Convert to GeoDataFrame
             gdf = self.gdf_from_feature_layer(features, wkid)
@@ -67,11 +72,10 @@ class DataFetcher:
 
         return gpd.GeoDataFrame()
 
-    def fetch_all_data(self, bbox):
-        """Fetches all layers from reference_layers.py that intersect BBOX."""
+    def fetch_all_trails(self, bbox):
         all_data = []
 
-        for layer in self.reference_layers:
+        for layer in self.trails:
             self.logger.info(f"Fetching {layer['full_name']}...")
             gdf = self.fetch_feature_layer(layer, bbox)
             if gdf is not None:

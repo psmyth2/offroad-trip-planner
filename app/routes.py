@@ -33,25 +33,37 @@ def fetch_trails():
 
     try:
         # Fetch trails
-        fetched_data = data_fetcher.fetch_all_data(bbox)
+        fetched_data = data_fetcher.fetch_all_trails(bbox)
         if not fetched_data:
             return jsonify({"message": "No trails found"}), 200
 
-        # Extract just the trail data
-        final_gdf = fetched_data[0]  # Ensure this is the trail layer
-
+        trails_gdf = fetched_data[0]  # Ensure this is the trail layer
+        roads_gdf = fetched_data[1]
+        trailheads_gdf = fetched_data[2]
         # Ensure CRS is WGS84
-        if final_gdf.crs is None or final_gdf.crs != "EPSG:4326":
-            final_gdf = final_gdf.to_crs(epsg=4326)
+        if trails_gdf.crs is None or trails_gdf.crs != "EPSG:4326":
+            trails_gdf = trails_gdf.to_crs(epsg=4326)
+
+        if roads_gdf.crs is None or roads_gdf.crs != "EPSG:4326":
+            roads_gdf = roads_gdf.to_crs(epsg=4326)
+
+        if trailheads_gdf.crs is None or trailheads_gdf.crs != "EPSG:4326":
+            trailheads_gdf = trailheads_gdf.to_crs(epsg=4326)
 
         # Save trails
-        processed_path = "data/processed/fetched_trails.geojson"
-        final_gdf.to_file(processed_path, driver="GeoJSON")
+        trails_path = "data/processed/fetched_trails.geojson"
+        trails_gdf.to_file(trails_path, driver="GeoJSON")
+
+        roads_path = "data/processed/roads.geojson"
+        roads_gdf.to_file(roads_path, driver="GeoJSON")
+
+        # Save trails
+        trailheads_path = "data/processed/fetched_trailheads.geojson"
+        trailheads_gdf.to_file(trailheads_path, driver="GeoJSON")
 
         # Return GeoJSON data along with redirect URL
         return jsonify({
-            "redirect": url_for('routes.selections'),
-            "trails": json.loads(final_gdf.to_json())  # Convert to JSON
+            "redirect": url_for('routes.selections')
         })
 
     except Exception as e:
@@ -59,18 +71,28 @@ def fetch_trails():
     
 @routes.route("/api/get_saved_trails", methods=["GET"])
 def get_saved_trails():
-    """Serve the previously saved trails from data/processed."""
+    """Serve the previously saved trails and trailheads from data/processed."""
     try:
         trails_path = "data/processed/fetched_trails.geojson"
+        roads_path = "data/processed/roads.geojson"
+        trailheads_path = "data/processed/fetched_trailheads.geojson"
 
-        if not os.path.exists(trails_path):
-            return jsonify({"error": "No saved trails found"}), 404
+        if not os.path.exists(trails_path) or not os.path.exists(roads_path) or not os.path.exists(trailheads_path):
+            return jsonify({"error": "No saved trails or trailheads found"}), 404
 
         trails = gpd.read_file(trails_path).to_json()
-        return jsonify(json.loads(trails))  # Convert GeoJSON to dict before sending
+        roads = gpd.read_file(roads_path).to_json()
+        trailheads = gpd.read_file(trailheads_path).to_json()
+
+        return jsonify({
+            "trails": json.loads(trails),
+            "roads": json.loads(roads),
+            "trailheads": json.loads(trailheads)
+        })
 
     except Exception as e:
-        return jsonify({"error": f"Failed to load saved trails: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to load saved trails or trailheads: {str(e)}"}), 500
+
 
 @routes.route("/selections")
 def selections():

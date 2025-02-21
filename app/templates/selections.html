@@ -22,19 +22,23 @@
 </head>
 <body>
 
-<div class="container-fluid">
-    <div id="instructions-card" class="d-flex flex-column">
-        <h5>🚀 Select Your Trail Segments</h5>
-        <p>Click on different trail segments to build your multi-day journey.</p>
-        <button id="confirm-selection" class="btn btn-primary mt-2">Confirm Route</button>
-        <hr>
-        <p class="text-muted"><small>Powered by Mapbox & Open Data</small></p>
+    <div class="container-fluid">
+        <!-- Sidebar Panel -->
+        <div id="selections-panel" class="d-flex flex-column">
+            <h5>🚀 Selected Trail Segments</h5>
+            <ul id="selected-trails-list"></ul> <!-- ✅ Ensure this exists -->
+            <h6>Total Distance: <span id="total-distance">0</span> miles</h6> <!-- ✅ Ensure this exists -->
+            <button id="confirm-selection" class="btn btn-primary mt-2">Confirm Route</button>
+            <hr>
+            <p class="text-muted"><small>Powered by Mapbox & Open Data</small></p>
+        </div>
+    
+        <!-- Map Container -->
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
     </div>
-
-    <div id="map-container">
-        <div id="map"></div>
-    </div>
-</div>
+    
 
 </body>
 </html>
