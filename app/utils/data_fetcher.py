@@ -18,9 +18,6 @@ class DataFetcher:
         self.data_raw_path = "data/raw"
         os.makedirs(self.data_raw_path, exist_ok=True)
 
-    def process_selected_trails(self, trail_list):
-        print(trail_list)
-
     def fetch_feature_layer(self, layer, bbox):
         """Fetches data from an Esri Feature Layer based on user BBOX."""
         feature_layer = FeatureLayer(layer['url'], self.gis)
@@ -76,7 +73,7 @@ class DataFetcher:
         all_data = []
 
         for layer in self.trails:
-            self.logger.info(f"Fetching {layer['full_name']}...")
+            self.logger.info(f"Fetching {layer['name']}...")
             gdf = self.fetch_feature_layer(layer, bbox)
             if gdf is not None:
                 all_data.append(gdf)

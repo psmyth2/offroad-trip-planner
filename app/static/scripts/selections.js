@@ -13,8 +13,8 @@ const map = new mapboxgl.Map({
 // Add zoom and rotation controls
 map.addControl(new mapboxgl.NavigationControl());
 
-// Store selected trail segments & their mileage
-let selectedTrails = new Map();
+// Store selected trail & road segments with mileage
+let selectedSegments = new Map();
 let totalDistance = 0;
 
 // Create a new popup instance
@@ -35,12 +35,12 @@ map.on('load', function () {
 
     console.log("✅ 3D Terrain Enabled with Southward Orientation");
 
-    // Load the saved trails & trailheads from API
+    // Load the saved trails, roads & trailheads from API
     fetch("/api/get_saved_trails")
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                console.error("Error loading trails & trailheads:", data.error);
+                console.error("Error loading trails, roads & trailheads:", data.error);
                 return;
             }
 
@@ -60,7 +60,7 @@ map.on('load', function () {
                 }
             });
 
-            // Add trails to the map
+            // Add roads to the map
             map.addSource("roads", { type: "geojson", data: data.roads });
             map.addLayer({
                 id: "road-layer",
@@ -70,9 +70,9 @@ map.on('load', function () {
                 paint: {
                     "line-color": ["case",
                         ["boolean", ["feature-state", "selected"], false], "#00FF00", // Green for selected
-                        "purple" // Default color
+                        "#FFA500" // Default road color (orange)
                     ],
-                    "line-width": 4
+                    "line-width": 3
                 }
             });
 
@@ -90,25 +90,87 @@ map.on('load', function () {
                 }
             });
 
-            console.log("✅ Trails & Trailheads loaded onto selection map.");
+            console.log("✅ Trails, Roads & Trailheads loaded onto selection map.");
         })
         .catch(error => console.error("Error loading saved trails:", error));
+});
+
+// Function to handle selection of both trails & roads
+function toggleSegmentSelection(layerId, feature) {
+    const mapboxId = feature.id;  // ✅ Use Mapbox-generated ID for feature state
+    const segmentId = feature.properties.OBJECTID;  // ✅ Use OBJECTID for filtering
+
+    if (!mapboxId || !segmentId) {
+        console.error("❌ Feature is missing a valid ID:", feature);
+        return;
+    }
+
+    const segmentName = feature.properties.TRAIL_NAME || feature.properties.NAME || "Unnamed Segment";
+    const distance = feature.properties.GIS_MILES || 0;  // Use GIS_MILES for both
+
+    if (selectedSegments.has(segmentId)) {
+        selectedSegments.delete(segmentId);
+        totalDistance -= distance;
+
+        if (map.getSource(layerId)) {
+            console.log(`🔵 Deselecting ${segmentName} (Mapbox ID: ${mapboxId}, OBJECTID: ${segmentId})`);
+            map.setFeatureState({ source: layerId, id: mapboxId }, { selected: false });
+        } else {
+            console.warn(`⚠️ Source '${layerId}' not found for feature state update.`);
+        }
+    } else {
+        selectedSegments.set(segmentId, { name: segmentName, distance: distance });
+        totalDistance += distance;
+
+        if (map.getSource(layerId)) {
+            console.log(`🟢 Selecting ${segmentName} (Mapbox ID: ${mapboxId}, OBJECTID: ${segmentId})`);
+            map.setFeatureState({ source: layerId, id: mapboxId }, { selected: true });
+        } else {
+            console.warn(`⚠️ Source '${layerId}' not found for feature state update.`);
+        }
+    }
+
+    updateSegmentList();
+    console.log("✅ Selected Segments for Filtering:", Array.from(selectedSegments.keys()));
+}
+
+
+// Click event to toggle selection for trails
+map.on("click", "trail-layer", (e) => {
+    toggleSegmentSelection("ohv-trails", e.features[0]);
+});
+
+// Click event to toggle selection for roads
+map.on("click", "road-layer", (e) => {
+    toggleSegmentSelection("roads", e.features[0]);
 });
 
 // Change cursor & show popup when hovering over trails
 map.on("mouseenter", "trail-layer", (e) => {
     map.getCanvas().style.cursor = "pointer";
-
     const trailName = e.features[0].properties.TRAIL_NAME || "Unknown Trail";
     const distance = e.features[0].properties.GIS_MILES || 0;
-
     popup.setLngLat(e.lngLat)
         .setHTML(`<strong>Trail:</strong> ${trailName} <br><strong>Distance:</strong> ${distance.toFixed(2)} miles`)
         .addTo(map);
 });
 
-// Remove popup and reset cursor when leaving trails
 map.on("mouseleave", "trail-layer", () => {
+    map.getCanvas().style.cursor = "";
+    popup.remove();
+});
+
+// Change cursor & show popup when hovering over roads
+map.on("mouseenter", "road-layer", (e) => {
+    map.getCanvas().style.cursor = "pointer";
+    const roadName = e.features[0].properties.NAME || "Unknown Road";
+    const distance = e.features[0].properties.GIS_MILES || 0;
+    popup.setLngLat(e.lngLat)
+        .setHTML(`<strong>Road:</strong> ${roadName} <br><strong>Distance:</strong> ${distance.toFixed(2)} miles`)
+        .addTo(map);
+});
+
+map.on("mouseleave", "road-layer", () => {
     map.getCanvas().style.cursor = "";
     popup.remove();
 });
@@ -116,57 +178,34 @@ map.on("mouseleave", "trail-layer", () => {
 // Change cursor & show popup when hovering over trailheads
 map.on("mouseenter", "trailheads-layer", (e) => {
     map.getCanvas().style.cursor = "pointer";
-
     const siteName = e.features[0].properties.PUBLIC_SITE_NAME || "Unknown Site";
-    
     popup.setLngLat(e.lngLat)
         .setHTML(`<strong>Trailhead:</strong> ${siteName}`)
         .addTo(map);
 });
 
-// Remove popup and reset cursor when leaving trailheads
 map.on("mouseleave", "trailheads-layer", () => {
     map.getCanvas().style.cursor = "";
     popup.remove();
 });
 
-// Click event to toggle trail segment selection & update list
-map.on("click", "trail-layer", (e) => {
-    const feature = e.features[0];
-    const trailId = feature.id || feature.properties.id;
-    const trailName = feature.properties.TRAIL_NAME || "Unnamed Trail";
-    const distance = feature.properties.GIS_MILES || 0;  // Use GIS_MILES
-
-    if (selectedTrails.has(trailId)) {
-        selectedTrails.delete(trailId);
-        totalDistance -= distance;
-        map.setFeatureState({ source: "ohv-trails", id: trailId }, { selected: false });
-    } else {
-        selectedTrails.set(trailId, { name: trailName, distance: distance });
-        totalDistance += distance;
-        map.setFeatureState({ source: "ohv-trails", id: trailId }, { selected: true });
-    }
-
-    updateTrailList();
-    console.log("Selected Trails:", Array.from(selectedTrails.keys()));
-});
-
-function updateTrailList() {
-    const trailList = document.getElementById("selected-trails-list");
+// Update the sidebar list dynamically
+function updateSegmentList() {
+    const segmentList = document.getElementById("selected-trails-list");
     const totalDistanceElement = document.getElementById("total-distance");
 
-    if (!trailList || !totalDistanceElement) {
+    if (!segmentList || !totalDistanceElement) {
         console.error("❌ Error: Sidebar elements missing from DOM.");
         return;
     }
 
     // Clear existing list
-    trailList.innerHTML = "";
+    segmentList.innerHTML = "";
 
-    selectedTrails.forEach((trail, id) => {
+    selectedSegments.forEach((segment, id) => {
         let listItem = document.createElement("li");
-        listItem.innerHTML = `${trail.name} - ${trail.distance.toFixed(2)} mi`;
-        trailList.appendChild(listItem);
+        listItem.innerHTML = `${segment.name} - ${segment.distance.toFixed(2)} mi`;
+        segmentList.appendChild(listItem);
     });
 
     // Update total distance
@@ -175,12 +214,12 @@ function updateTrailList() {
 
 // Confirm Selection Button
 document.getElementById("confirm-selection").addEventListener("click", () => {
-    console.log("🚀 Final Selected Trails:", Array.from(selectedTrails.keys()));
+    console.log("🚀 Final Selected Segments:", Array.from(selectedSegments.keys()));
 
     fetch("/api/process_route", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ selected_trails: Array.from(selectedTrails.keys()) })
+        body: JSON.stringify({ selected_segments: Array.from(selectedSegments.keys()) })
     })
     .then(response => response.json())
     .then(data => {

@@ -86,3 +86,22 @@ html, body {
 #confirm-bbox:hover {
     background-color: #0056b3;
 }
+
+.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.legend div {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.legend-box {
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+    display: inline-block;
+    border-radius: 50%;
+}
