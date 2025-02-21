@@ -1,0 +1,28 @@
+name: offroad-trip
+channels:
+  - conda-forge
+  - esri
+dependencies:
+  - python=3.11
+  - flask
+  - flask-cors
+  - flask-wtf
+  - flask-migrate
+  - flask-sqlalchemy
+  - geopandas
+  - pandas
+  - numpy
+  - gunicorn
+  - werkzeug
+  - requests
+  - rasterio
+  - rasterstats
+  - retrying
+  - arcgis=2.3.1
+  - jupyterlab  # For data exploration
+  - pyproj      # Coordinate system transformations
+  - shapely     # Geometry processing
+  - fiona       # Read/write vector data
+  - pip
+  - pip:
+      - wtforms

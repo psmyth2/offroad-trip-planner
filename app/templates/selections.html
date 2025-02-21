@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Multi-Day Journey</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Mapbox CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+
+    <!-- Load Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <script>
+        const mapboxApiKey = "{{ mapbox_api_key }}";
+    </script>
+    <script defer src="{{ url_for('static', filename='scripts/selections.js') }}"></script>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div id="instructions-card" class="d-flex flex-column">
+        <h5>🚀 Select Your Trail Segments</h5>
+        <p>Click on different trail segments to build your multi-day journey.</p>
+        <button id="confirm-selection" class="btn btn-primary mt-2">Confirm Route</button>
+        <hr>
+        <p class="text-muted"><small>Powered by Mapbox & Open Data</small></p>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+</div>
+
+</body>
+</html>

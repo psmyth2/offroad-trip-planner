@@ -1,0 +1,26 @@
+# Ignore Python cache & environment
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.venv
+.envrc
+
+# Ignore Config Files (Tokens, Secrets)
+config.ini
+
+# Ignore Data Output (Raw & Processed Data)
+data/raw/
+data/processed/
+logs/
+
+# Ignore Docker Build Files
+*.log
+*.pid
+*.sock
+*.db
+docker-compose.override.yml
+
+# Ignore Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
