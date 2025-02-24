@@ -15,29 +15,38 @@
     <pre id="log-output">Waiting for logs...</pre>
 
     <script>
+        const logOutput = document.getElementById("log-output");
         const eventSource = new EventSource("/logs");
-
+    
         eventSource.onmessage = function (event) {
-            const logOutput = document.getElementById("log-output");
             logOutput.textContent += event.data + "\n";
-            logOutput.scrollTop = logOutput.scrollHeight;
+            logOutput.scrollTop = logOutput.scrollHeight;  // Auto-scroll to new logs
         };
-
+    
+        eventSource.onerror = function () {
+            console.error("🚀 Log stream disconnected. Attempting to reconnect...");
+            eventSource.close();
+            setTimeout(() => {
+                location.reload();  // Reload page if connection is lost
+            }, 5000);
+        };
+    
         function checkProcessingStatus() {
             fetch(`/check-status/{{ session_id }}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.done) {
+                        eventSource.close();  // Close SSE connection when processing is done
                         setTimeout(() => {
-                            window.location.href = "/adventure";  // ✅ Redirect when processing is done
+                            window.location.href = "/adventure";  // ✅ Redirect when done
                         }, 2000);
                     }
                 })
-                .catch(error => console.error("Error checking processing status:", error));
+                .catch(error => console.error("❌ Error checking processing status:", error));
         }
-
+    
         setInterval(checkProcessingStatus, 2000);
-    </script>
+    </script>    
 
 </div>
 </body>

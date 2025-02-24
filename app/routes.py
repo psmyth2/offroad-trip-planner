@@ -7,20 +7,25 @@ import geopandas as gpd
 import configparser
 import pandas as pd
 import requests
+import select
 from flask import (
     Blueprint, render_template, request, jsonify, redirect, url_for, Response, stream_with_context
 )
 from app.utils.data_fetcher import DataFetcher
 from app.utils.data_processor import DataProcessor
+from app.reference_layers import reference_layers
 
 # ✅ Initialize Blueprint
 routes = Blueprint("routes", __name__)
 log = logging.getLogger(__name__)
 
 # ✅ Load Configurations from `config.ini`
-config = configparser.ConfigParser()
-config.read("config.ini")
-MAPBOX_API_KEY = config.get("mapbox", "API_KEY")
+# config = configparser.ConfigParser()
+# config.read("config.ini")
+# MAPBOX_API_KEY = config.get("mapbox", "API_KEY")
+MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
+# ✅ OpenWeather API Key (Add this to `config.ini`)
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
 # ✅ Initialize DataFetcher
 data_fetcher = DataFetcher()
@@ -43,8 +48,8 @@ def perform_processing(selected_segments, session_id):
     processing_status[session_id] = False  # ✅ Ensure processing is marked as NOT done
 
     try:
-        trails_path = "data/processed/fetched_trails.geojson"
-        roads_path = "data/processed/roads.geojson"
+        trails_path = "/tmp/data/processed/fetched_trails.geojson"
+        roads_path = "/tmp/data/processed/roads.geojson"
 
         # ✅ Step 1: Load GeoJSON data
         log.info("🔄 Loading trail and road datasets...")
@@ -83,7 +88,7 @@ def perform_processing(selected_segments, session_id):
             final_trip_gdf = final_trip_gdf.to_crs(epsg=4326)
 
         # ✅ Save processed trip data
-        processed_path = "data/processed/final_trip.geojson"
+        processed_path = "/tmp/data/processed/final_trip.geojson"
         final_trip_gdf.to_file(processed_path, driver="GeoJSON")
 
         log.info(f"✅ Trip processing complete! Data saved to {processed_path}")
@@ -176,9 +181,9 @@ def fetch_trails():
 
         # Convert & save GeoJSON files
         for gdf, path in [
-            (trails_gdf, "data/processed/fetched_trails.geojson"),
-            (roads_gdf, "data/processed/roads.geojson"),
-            (trailheads_gdf, "data/processed/fetched_trailheads.geojson")
+            (trails_gdf, "/tmp/data/processed/fetched_trails.geojson"),
+            (roads_gdf, "/tmp/data/processed/roads.geojson"),
+            (trailheads_gdf, "/tmp/data/processed/fetched_trailheads.geojson")
         ]:
             if gdf.crs is None or gdf.crs != "EPSG:4326":
                 gdf = gdf.to_crs(epsg=4326)
@@ -195,9 +200,9 @@ def get_saved_trails():
     """Serve the previously saved trails, roads, and trailheads."""
     try:
         files = {
-            "trails": "data/processed/fetched_trails.geojson",
-            "roads": "data/processed/roads.geojson",
-            "trailheads": "data/processed/fetched_trailheads.geojson"
+            "trails": "/tmp/data/processed/fetched_trails.geojson",
+            "roads": "/tmp/data/processed/roads.geojson",
+            "trailheads": "/tmp/data/processed/fetched_trailheads.geojson"
         }
 
         saved_data = {}
@@ -229,7 +234,7 @@ def process_route():
         return jsonify({"error": "No segments selected"}), 400
 
     session_id = str(int(time.time()))
-    final_route_path = "data/processed/final_trip.geojson"
+    final_route_path = "/tmp/data/processed/final_trip.geojson"
     processing_status[session_id] = False  # ✅ Mark processing as NOT done
 
     log.info(f"🔄 Starting processing for session {session_id}...")
@@ -262,8 +267,8 @@ def get_adventure_data():
     """Serves the final enriched route and filtered trailheads (as POIs)."""
     try:
         files = {
-            "trails": "data/processed/final_trip.geojson",
-            "pois": "data/processed/filtered_trailheads.geojson"  # ✅ Using trailheads as POIs
+            "trails": "/tmp/data/processed/final_trip.geojson",
+            "pois": "/tmp/data/processed/filtered_trailheads.geojson"  # ✅ Using trailheads as POIs
         }
 
         adventure_data = {}
@@ -279,19 +284,69 @@ def get_adventure_data():
     except Exception as e:
         log.error(f"❌ ERROR in get_adventure_data: {str(e)}")
         return jsonify({"error": f"Failed to load adventure data: {str(e)}"}), 500
+    
+@routes.route("/api/get_weather", methods=["POST"])
+def get_weather():
+    """Fetches weather forecast for the bounding box centroid."""
+    try:
+        data = request.get_json()
+        bbox = data.get("bbox")
 
+        if not bbox or len(bbox) != 4:
+            return jsonify({"error": "Invalid BBOX format"}), 400
+
+        # ✅ Compute the centroid of the bounding box
+        minX, minY, maxX, maxY = bbox
+        centroid_lat = (minY + maxY) / 2
+        centroid_lon = (minX + maxX) / 2
+
+        if not OPENWEATHER_API_KEY:
+            return jsonify({"error": "Missing OpenWeather API Key"}), 500
+        open_weather_url = reference_layers[1]["url"]
+
+        # ✅ Query OpenWeatherMap API for forecast
+        weather_url = f"{open_weather_url}?lat={centroid_lat}&lon={centroid_lon}&appid={OPENWEATHER_API_KEY}&units=imperial"
+        response = requests.get(weather_url)
+        response.raise_for_status()
+        weather_data = response.json()
+
+        forecast = {
+            "temperature": weather_data["main"]["temp"],
+            "description": weather_data["weather"][0]["description"].capitalize(),
+            "wind_speed": weather_data["wind"]["speed"],
+            "humidity": weather_data["main"]["humidity"]
+        }
+
+        return jsonify(forecast)
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Weather API request failed: {str(e)}"}), 500
+
+
+def log_stream():
+    """Efficiently stream logs to the frontend using SSE without blocking Gunicorn workers."""
+    with open(LOG_FILE, "r") as log_file:
+        log_file.seek(0, os.SEEK_END)  # Move to the end of the file
+
+        while True:
+            rlist, _, _ = select.select([log_file], [], [], 1)  # Wait for file updates (non-blocking)
+            
+            if rlist:
+                line = log_file.readline().strip()
+                if line:
+                    yield f"data: {line}\n\n"
+            
+            # Handle client disconnects
+            if not log_file.readable():
+                print("🚀 Client disconnected, stopping log stream.")
+                break
 
 @routes.route("/logs")
 def stream_logs():
     """Streams logs in real-time using Server-Sent Events (SSE)."""
+    return Response(
+        stream_with_context(log_stream()),
+        content_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    )
 
-    def generate():
-        with open(LOG_FILE, "r") as log_file:
-            log_file.seek(0, 2)
-            while True:
-                line = log_file.readline().strip()
-                if line:
-                    yield f"data: {line}\n\n"
-                time.sleep(0.5)
-
-    return Response(stream_with_context(generate()), content_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

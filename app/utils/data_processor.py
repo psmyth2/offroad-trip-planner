@@ -12,16 +12,17 @@ from app.reference_layers import reference_layers
 log = logging.getLogger(__name__)
 
 # ✅ Load API Key from config.ini
-config = configparser.ConfigParser()
-config.read("config.ini")
-OPEN_TOPO_API_KEY = config.get("open-topo", "API_KEY", fallback=None)
+# config = configparser.ConfigParser()
+# config.read("config.ini")
+# OPEN_TOPO_API_KEY = config.get("open-topo", "API_KEY", fallback=None)
+OPEN_TOPO_API_KEY = os.getenv("OPEN_TOPO_API_KEY")
 
 class DataProcessor:
     """Processes the final selected route with geospatial enhancements."""
 
     def __init__(self, final_route_path):
         self.final_route_path = final_route_path
-        self.elevation_url = "https://portal.opentopography.org/API/globaldem"
+        self.elevation_url = reference_layers[0]["url"]
 
     def process_route(self):
         """Main function to filter trailheads, extract elevation, calculate slope, and classify difficulty."""
@@ -105,9 +106,9 @@ class DataProcessor:
 
             if response.headers.get("content-type") == "application/octet-stream":
                 log.info("✅ Received DEM GeoTIFF file for requested area.")
-                with open("data/processed/elevation.tif", "wb") as f:
+                with open("/tmp/data/processed/elevation.tif", "wb") as f:
                     f.write(response.content)
-                return "data/processed/elevation.tif"
+                return "/tmp/data/processed/elevation.tif"
             else:
                 log.warning(f"⚠️ Unexpected response format: {response.headers.get('content-type')}")
                 return None
@@ -119,7 +120,7 @@ class DataProcessor:
 
     def extract_elevation_from_raster(self):
         """Extracts elevation values from elevation.tif for each vertex along the final route."""
-        raster_path = "data/processed/elevation.tif"
+        raster_path = "/tmp/data/processed/elevation.tif"
         log.info("🔄 Extracting elevation values from local raster...")
 
         final_gdf = gpd.read_file(self.final_route_path)
@@ -206,8 +207,8 @@ class DataProcessor:
         log.info("🔄 Filtering trailheads that intersect or are near the final trip route...")
 
         final_route_path = self.final_route_path
-        trailheads_path = "data/processed/fetched_trailheads.geojson"
-        filtered_trailheads_path = "data/processed/filtered_trailheads.geojson"
+        trailheads_path = "/tmp/data/processed/fetched_trailheads.geojson"
+        filtered_trailheads_path = "/tmp/data/processed/filtered_trailheads.geojson"
 
         if not os.path.exists(final_route_path) or not os.path.exists(trailheads_path):
             log.error("❌ Final route or trailheads file is missing. Cannot filter trailheads.")

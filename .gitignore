@@ -14,6 +14,8 @@ config.ini
 data/raw/
 data/processed/
 logs/
+tmp/data/raw/
+tmp/data/processed/
 
 # Ignore Docker Build Files
 *.log

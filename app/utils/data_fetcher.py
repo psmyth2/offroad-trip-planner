@@ -15,8 +15,9 @@ class DataFetcher:
         self.gis = GIS()
         self.trails = trails_roads
         self.reference_layers = reference_layers
-        self.data_raw_path = "data/raw"
-        os.makedirs(self.data_raw_path, exist_ok=True)
+        self.data_raw_path = "/tmp/data/raw"
+        # self.data_raw_path = "tmp/data/raw"
+        # os.makedirs(self.data_raw_path, exist_ok=True)
 
     def fetch_feature_layer(self, layer, bbox):
         """Fetches data from an Esri Feature Layer based on user BBOX."""

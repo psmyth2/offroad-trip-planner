@@ -13,16 +13,17 @@ dependencies:
   - pandas
   - numpy
   - gunicorn
+  - gevent
   - werkzeug
   - requests
   - rasterio
   - rasterstats
   - retrying
   - arcgis=2.3.1
-  - jupyterlab  # For data exploration
-  - pyproj      # Coordinate system transformations
-  - shapely     # Geometry processing
-  - fiona       # Read/write vector data
+  - jupyterlab
+  - pyproj
+  - shapely
+  - fiona
   - pip
   - pip:
       - wtforms

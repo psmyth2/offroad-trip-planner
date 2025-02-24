@@ -70,7 +70,7 @@ map.on('load', function () {
                 paint: {
                     "line-color": ["case",
                         ["boolean", ["feature-state", "selected"], false], "#00FF00", // Green for selected
-                        "#FFA500" // Default road color (orange)
+                        "#FF5733" // Default road color (orange)
                     ],
                     "line-width": 3
                 }
