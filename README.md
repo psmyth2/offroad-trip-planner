@@ -91,7 +91,7 @@
 
 - The **final enriched route** (with POIs, slope classifications, & elevation data) is displayed on the **interactive 3D Mapbox map**.
 
-![Demo](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExeW9vMHh1dTBoY3ltdTUyeHpsZm1iMDRlZ3p4anV2dGdyNWo4MTY0MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yHzwi587nszWApU3Gl/giphy.gif)
+![Demo Gif](https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnM2NmI1NzcxYXFqOTRxcXE4Z2lrbjhrMDZoNWxxbmRrejIwZ250ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/18aVZ8N5UUxEayadEb/giphy.gif)
 
 ---
 
