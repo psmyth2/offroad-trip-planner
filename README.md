@@ -51,6 +51,14 @@
     - **Difficult** (> 10%)
   - Processed route is saved in **`final_trip.geojson`** (**handled in** `data_processor.py`).
 
+### **☀️ 4. Elevation & Slope Data**
+
+- **Source:** [OpenWeatherMap](https://openweathermap.org/api)
+- **Processing:**
+  - Queries **OpenWeatherMap API** to retrieve a weather forcast for **Adventure BBOX**.
+  - Fetch request in `adventure.js` calls Flask enpoint in `routes.py` to get weather info
+  - Forecast details including temps, wind and humidity are populated in info sidebar
+
 ---
 
 ## **🛤️ Route Planning Methodology**
