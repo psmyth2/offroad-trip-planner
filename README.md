@@ -4,6 +4,8 @@
 
 🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure)
 
+> **Please only use the Production deployment for viewing and exploring the final map. To create a new adventure area and select a final route, use the Development Sandbox deployment linked below.**
+
 🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/)
 
 🔗 **Summary One-Pager:** [Overview of Project](https://smythgeospatial.com/wp-content/uploads/2025/02/OnX-Summary-One-Pager.pdf)
@@ -89,8 +91,7 @@
 
 - The **final enriched route** (with POIs, slope classifications, & elevation data) is displayed on the **interactive 3D Mapbox map**.
 
-🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure){:target="_blank"}
-
+![Trip Planner Demo](https://smythgeospatial.com/wp-content/uploads/2025/02/demo.gif)
 ---
 
 ## **🚀 Running Locally with Docker**
