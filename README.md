@@ -1,14 +1,14 @@
-# 🏔️ Offroad Multi-Day Adventure Planner
+# 🏔️ Offroad Multi-Day Adventure Planner Technical Documentation
 
-🚙 **A Flask + Mapbox web app for planning multi-day offroad adventures, integrating USFS trails, terrain analysis, and interactive 3D maps. This approach allows for a clear demonstration of geospatial Python methods while leveraging Mapbox for first-class interactive visualization. Processing logs are live streamed to the user for extra dorkiness**
+**A Flask + Mapbox web app for planning multi-day offroad adventures, integrating USFS trails, terrain analysis, and interactive 3D maps. This approach allows for a clear demonstration of geospatial Python methods while leveraging Mapbox for first-class interactive visualization. Processing logs are live streamed to the user for extra dorkiness**
 
-🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure)
+🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure){:target="_blank"}
 
-🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/)
+🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/){:target="_blank"}
 
-🔗 **Summary One-Pager:** [Overview of Project](https://smythgeospatial.com/wp-content/uploads/2025/02/OnX-Summary-One-Pager.pdf)
+🔗 **Summary One-Pager:** [Overview of Project](https://smythgeospatial.com/wp-content/uploads/2025/02/OnX-Summary-One-Pager.pdf){:target="_blank"}
 
-## **📌 Features**
+## **Technical Features Overview**
 
 - **📍 User-Defined Adventure Areas** → Select a bounding box to define your adventure region.
 - **🛤️ Smart Trail Selection** → Fetches USFS OHV/Offroad trails and roads dynamically using intersections with user-defined adventure area (bbox).
@@ -21,7 +21,7 @@
 
 ## **📡 Data Collection Process**
 
-- **Source dicts:** [Reference layer config as code!](https://github.com/psmyth2/offroad-trip-planner/blob/main/app/reference_layers.py)
+- **Source dicts:** [Reference layer config as code!](https://github.com/psmyth2/offroad-trip-planner/blob/main/app/reference_layers.py){:target="_blank"}
 
 ### **📍 1. Trail and Road Data (USFS & BLM)**
 
@@ -80,6 +80,8 @@
 ### **Step 5: Final Processing & Map Display**
 
 - The **final enriched route** (with POIs, slope classifications, & elevation data) is displayed on the **interactive 3D Mapbox map**.
+
+🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure){:target="_blank"}
 
 ---
 
