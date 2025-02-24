@@ -39,7 +39,7 @@
   - **Trailheads are filtered** → **Only those within 100m of the final route** are used (geopandas).
   - Final filtered trailheads are saved in **`filtered_trailheads.geojson`** and used as **POIs**.
 
-### **🛣️ 3. Elevation & Slope Data**
+### **🏔️ 3. Elevation & Slope Data**
 
 - **Source:** [OpenTopography (SRTM DEM)](https://opentopography.org/developers)
 - **Processing:**
@@ -51,7 +51,7 @@
     - **Difficult** (> 10%)
   - Processed route is saved in **`final_trip.geojson`** (**handled in** `data_processor.py`).
 
-### **☀️ 4. Elevation & Slope Data**
+### **☀️ 4. Weather Data**
 
 - **Source:** [OpenWeatherMap](https://openweathermap.org/api)
 - **Processing:**
