@@ -6,6 +6,8 @@
 
 🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/)
 
+🔗 **Summary One-Pager:** [Overview of Project](https://smythgeospatial.com/wp-content/uploads/2025/02/OnX-Summary-One-Pager.pdf)
+
 ## **📌 Features**
 
 - **📍 User-Defined Adventure Areas** → Select a bounding box to define your adventure region.
