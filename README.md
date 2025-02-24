@@ -30,7 +30,8 @@
 - **Source:** [US Forest Service & Bureau of Land Management ArcGIS REST APIs](https://data-usfs.hub.arcgis.com/)
 - **Collection Method:**
   - User **selects a bounding box**.
-  - System **queries ArcGIS feature servers** for **OHV/Offroad Trails and Roads** in the area (**handled in** `data_fetcher.py`).
+  - System **queries ArcGIS feature servers** for **OHV/Offroad Trails and Roads** in the area (**handled in** [data_fetcher.py](app/utils/data_fetcher.py)
+).
   - Results are stored in **GeoJSON** (`fetched_trails.geojson`).
 
 ### **🏠 2. Trailheads as POIs**
@@ -51,7 +52,7 @@
     - **Easy** (< 5%)
     - **Moderate** (5-10%)
     - **Difficult** (> 10%)
-  - Processed route is saved in **`final_trip.geojson`** (**handled in** `data_processor.py`).
+  - Processed route is saved in **`final_trip.geojson`** (**handled in** [data_processor.py](app/utils/data_processor.py).
 
 ### **☀️ 4. Weather Data**
 
@@ -68,7 +69,7 @@
 ### **Step 1: User Defines Adventure Area**
 
 - **User selects a bounding box (BBOX)** using **Mapbox Draw tools**.
-- The system fetches **all available trails** within that region (**handled in** `data_fetcher.py`).
+- The system fetches **all available trails** within that region (**handled in** ).
 
 ### **Step 2: Trail Selection & Route Customization**
 
