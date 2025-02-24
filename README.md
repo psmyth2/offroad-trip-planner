@@ -2,11 +2,11 @@
 
 **A Flask + Mapbox web app for planning multi-day offroad adventures, integrating USFS trails, terrain analysis, and interactive 3D maps. This approach allows for a clear demonstration of geospatial Python methods while leveraging Mapbox for first-class interactive visualization. Processing logs are live streamed to the user for extra dorkiness**
 
-🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure){:target="_blank"}
+🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure)
 
-🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/){:target="_blank"}
+🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/)
 
-🔗 **Summary One-Pager:** [Overview of Project](https://smythgeospatial.com/wp-content/uploads/2025/02/OnX-Summary-One-Pager.pdf){:target="_blank"}
+🔗 **Summary One-Pager:** [Overview of Project](https://smythgeospatial.com/wp-content/uploads/2025/02/OnX-Summary-One-Pager.pdf)
 
 ## **Technical Features Overview**
 
@@ -21,7 +21,7 @@
 
 ## **📡 Data Collection Process**
 
-- **Source dicts:** [Reference layer config as code!](https://github.com/psmyth2/offroad-trip-planner/blob/main/app/reference_layers.py){:target="_blank"}
+- **Source dicts:** [Reference layer config as code!](https://github.com/psmyth2/offroad-trip-planner/blob/main/app/reference_layers.py)
 
 ### **📍 1. Trail and Road Data (USFS & BLM)**
 
