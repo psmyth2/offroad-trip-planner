@@ -10,7 +10,6 @@ from app.reference_layers import reference_layers
 
 class DataFetcher:
     def __init__(self):
-        """Initialize DataFetcher with GIS connection and output paths."""
         self.logger = logging.getLogger(__name__)
         self.gis = GIS()
         self.trails = trails_roads
@@ -20,12 +19,11 @@ class DataFetcher:
         # os.makedirs(self.data_raw_path, exist_ok=True)
 
     def fetch_feature_layer(self, layer, bbox):
-        """Fetches data from an Esri Feature Layer based on user BBOX."""
+        """get data from an esri layers based on user bbox. request output in 4326"""
         feature_layer = FeatureLayer(layer['url'], self.gis)
-        wkid = 4326  # Ensure data is in WGS84
+        wkid = 4326
 
         try:
-            # Convert BBOX to Esri's dictionary format
             bbox_dict = {
                 "xmin": bbox[0], "ymin": bbox[1], "xmax": bbox[2], "ymax": bbox[3],
                 "spatialReference": {"wkid": wkid}
@@ -34,14 +32,14 @@ class DataFetcher:
             query_filter = intersects(bbox_dict, sr=wkid)
             features = feature_layer.query(geometry_filter=query_filter, out_sr=wkid, out_fields=layer['fields'])
 
-            # Convert to GeoDataFrame
+            #convert to gdf
             gdf = self.gdf_from_feature_layer(features, wkid)
 
             if gdf.empty:
                 self.logger.warning(f"No data found for {layer['name']}")
                 return None
 
-            # Save raw GeoJSON
+            #save geojson
             gdf.to_file(f"{self.data_raw_path}/{layer['name']}.geojson", driver="GeoJSON")
             return gdf
 
@@ -50,19 +48,17 @@ class DataFetcher:
             return None
 
     def gdf_from_feature_layer(self, feature_layer, wkid=4326):
-        """Converts Esri FeatureLayer response to GeoDataFrame with correct projection."""
+        """converts esri flayer response to gdf in 4326"""
         if feature_layer.features:
             geojson = feature_layer.to_geojson
             gdf = gpd.read_file(geojson)
 
-            # Explicitly set geometry column if needed
             if "geometry" not in gdf.columns:
                 for col in gdf.columns:
                     if gdf[col].dtype == "geometry":
                         gdf = gdf.set_geometry(col)
                         break
 
-            # Ensure CRS is set correctly
             if gdf.crs is None or gdf.crs != f"EPSG:{wkid}":
                 gdf = gdf.set_crs(epsg=wkid)
 

@@ -11,49 +11,40 @@ from app.reference_layers import reference_layers
 
 log = logging.getLogger(__name__)
 
-# ✅ Load API Key from config.ini
 # config = configparser.ConfigParser()
 # config.read("config.ini")
 # OPEN_TOPO_API_KEY = config.get("open-topo", "API_KEY", fallback=None)
 OPEN_TOPO_API_KEY = os.getenv("OPEN_TOPO_API_KEY")
 
 class DataProcessor:
-    """Processes the final selected route with geospatial enhancements."""
-
     def __init__(self, final_route_path):
         self.final_route_path = final_route_path
         self.elevation_url = reference_layers[0]["url"]
 
     def process_route(self):
-        """Main function to filter trailheads, extract elevation, calculate slope, and classify difficulty."""
+        """filter trailheads, extract elevation, calculate slope, and classify difficulty."""
         log.info("🔄 Starting geospatial enhancements on final route...")
 
-        # ✅ Step 1: Filter Trailheads to Only Those Intersecting the Final Route
         self.filter_trailheads()
 
-        # ✅ Step 2: Download elevation DEM from OpenTopography
         elevation_tif = self.query_elevation_tif()
         if not elevation_tif:
             log.error("❌ Failed to download elevation raster. Cannot proceed with processing.")
             return None
 
-        # ✅ Step 3: Extract elevation from raster
         elevation_data = self.extract_elevation_from_raster()
         if elevation_data is None:
             log.error("❌ Elevation extraction failed.")
             return None
 
-        # ✅ Step 4: Calculate slope per segment
         slope_data = self.calculate_slope(elevation_data)
 
-        # ✅ Step 5: Classify difficulty based on slope
         self.classify_difficulty(slope_data)
 
         log.info("✅ Route processing complete.")
         return self.final_route_path
 
     def compute_bbox(self, final_gdf):
-        """Compute bounding box (north, south, east, west) from route geometry."""
         all_coords = []
 
         for geom in final_gdf.geometry:
@@ -61,7 +52,7 @@ class DataProcessor:
                 all_coords.extend(geom.coords)
             elif geom.geom_type == "MultiLineString":
                 for line in geom.geoms:
-                    all_coords.extend(line.coords)  # ✅ Extract coordinates from each LineString
+                    all_coords.extend(line.coords)
 
         if not all_coords:
             log.error("❌ No valid coordinates found in route geometry.")
@@ -76,13 +67,12 @@ class DataProcessor:
         }
 
     def query_elevation_tif(self):
-        """Query the OpenTopography API for a DEM raster based on the route bounding box."""
+        """query open topo for raster based on the route bounding box."""
         final_gdf = gpd.read_file(self.final_route_path)
         if final_gdf.empty:
             log.error("❌ Final trip route is empty. Cannot query DEM.")
             return None
 
-        # ✅ Compute bounding box using updated method
         bbox = self.compute_bbox(final_gdf)
         if not bbox:
             log.error("❌ Could not compute bounding box. Aborting DEM request.")
@@ -105,12 +95,12 @@ class DataProcessor:
             response.raise_for_status()
 
             if response.headers.get("content-type") == "application/octet-stream":
-                log.info("✅ Received DEM GeoTIFF file for requested area.")
+                log.info("received DEM GeoTIFF file for requested area.")
                 with open("/tmp/data/processed/elevation.tif", "wb") as f:
                     f.write(response.content)
                 return "/tmp/data/processed/elevation.tif"
             else:
-                log.warning(f"⚠️ Unexpected response format: {response.headers.get('content-type')}")
+                log.warning(f"Unexpected response format: {response.headers.get('content-type')}")
                 return None
 
         except requests.exceptions.RequestException as req_err:
@@ -119,7 +109,7 @@ class DataProcessor:
 
 
     def extract_elevation_from_raster(self):
-        """Extracts elevation values from elevation.tif for each vertex along the final route."""
+        """extract elevation values from elevation.tif for each vertex along the final route."""
         raster_path = "/tmp/data/processed/elevation.tif"
         log.info("🔄 Extracting elevation values from local raster...")
 
@@ -133,7 +123,7 @@ class DataProcessor:
         try:
             with rasterio.open(raster_path) as src:
                 affine_transform = src.transform
-                height, width = src.shape  # ✅ Get raster dimensions
+                height, width = src.shape #raster dimensions
 
                 for index, row in final_gdf.iterrows():
                     geom = row.geometry
@@ -143,10 +133,9 @@ class DataProcessor:
                     for lon, lat in coords:
                         row_idx, col_idx = rowcol(affine_transform, lon, lat)
 
-                        # ✅ Validate row and column indices
                         if not (0 <= row_idx < height and 0 <= col_idx < width):
-                            log.warning(f"⚠️ Skipping out-of-bounds point ({lon}, {lat}) at ({row_idx}, {col_idx})")
-                            continue  # ✅ Skip points outside raster bounds
+                            #skipping points outside of bounds of tif/raster
+                            continue 
 
                         elevation = src.read(1)[row_idx, col_idx]
                         segment_elevations.append(elevation)
@@ -161,9 +150,7 @@ class DataProcessor:
             return None
 
     def calculate_slope(self, elevation_data, horizontal_resolution=30):
-        """Calculates slope between consecutive points along each segment.
-        - Uses elevation differences (rise) over horizontal distances (run).
-        - Default `horizontal_resolution` is 30m (SRTMGL3 DEM resolution).
+        """calculates slope between consecutive points along each segment.
         """
         log.info("🔄 Calculating slope for each route segment...")
 
@@ -172,11 +159,11 @@ class DataProcessor:
             segment_slopes = []
             
             for i in range(1, len(segment)):
-                rise = segment[i] - segment[i - 1]  # ✅ Elevation change in meters
-                run = horizontal_resolution  # ✅ DEM cell size in meters
+                rise = segment[i] - segment[i - 1] # elevation delta in meters
+                run = horizontal_resolution #cell size
 
-                slope = (rise / run) * 100  # ✅ Convert to percentage
-                segment_slopes.append(abs(slope))  # ✅ Ensure positive values
+                slope = (rise / run) * 100
+                segment_slopes.append(abs(slope)) #best approach for dealing with negative slope?
             
             slopes.append(np.mean(segment_slopes) if segment_slopes else 0)
 
@@ -184,7 +171,7 @@ class DataProcessor:
         return slopes
 
     def classify_difficulty(self, slopes):
-        """Classifies route difficulty based on slope severity."""
+        """classify route difficulty based on slope severity."""
         final_gdf = gpd.read_file(self.final_route_path)
 
         def categorize_slope(slope):
@@ -200,10 +187,9 @@ class DataProcessor:
         final_gdf["Difficulty"] = final_gdf["Slope"].apply(categorize_slope)
 
         final_gdf.to_file(self.final_route_path, driver="GeoJSON")
-        log.info(f"✅ Difficulty classification added to route. Example classifications: {final_gdf[['Slope', 'Difficulty']].head()}")
 
-    def filter_trailheads(self, buffer_distance=0.001):  # Default buffer ~100m (0.001 degrees)
-        """Filters trailheads to only those that intersect or are near the final selected route."""
+    def filter_trailheads(self, buffer_distance=0.001):  # dfault buffer ~100m (0.001 degrees)
+        """filter trailheads to only those that intersect or are near the final selected route."""
         log.info("🔄 Filtering trailheads that intersect or are near the final trip route...")
 
         final_route_path = self.final_route_path
@@ -214,7 +200,6 @@ class DataProcessor:
             log.error("❌ Final route or trailheads file is missing. Cannot filter trailheads.")
             return None
 
-        # ✅ Load final route and trailheads
         final_gdf = gpd.read_file(final_route_path)
         trailheads_gdf = gpd.read_file(trailheads_path)
 
@@ -222,17 +207,16 @@ class DataProcessor:
             log.error("❌ Final route or trailheads dataset is empty. No filtering applied.")
             return None
 
-        # ✅ Apply buffer to the final route before spatial join
         final_gdf["geometry"] = final_gdf.geometry.buffer(buffer_distance)
 
-        # ✅ Spatial join to filter trailheads within buffer distance
+        #spat join to filter trailheads within buffer distance
         filtered_trailheads = gpd.sjoin(trailheads_gdf, final_gdf, predicate="intersects").drop(columns=["index_right"])
 
         if filtered_trailheads.empty:
-            log.warning("⚠️ No trailheads found within buffer distance of the final route.")
+            log.warning("no trailheads found within buffer distance of the final route.")
         else:
             filtered_trailheads.to_file(filtered_trailheads_path, driver="GeoJSON")
-            log.info(f"✅ Saved {len(filtered_trailheads)} filtered trailheads to {filtered_trailheads_path}")
+            log.info(f"saved {len(filtered_trailheads)} filtered trailheads to {filtered_trailheads_path}")
 
         return filtered_trailheads
 

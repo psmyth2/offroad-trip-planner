@@ -1,8 +1,10 @@
 # 🏔️ Offroad Multi-Day Adventure Planner
 
-🚙 **A Flask + Mapbox web app for planning multi-day offroad adventures, integrating USFS trails, terrain analysis, and interactive 3D maps. This approach allows for a clear demonstration of geospatial Python methods while leveraging Mapbox for first-class interactive visualization.**
+🚙 **A Flask + Mapbox web app for planning multi-day offroad adventures, integrating USFS trails, terrain analysis, and interactive 3D maps. This approach allows for a clear demonstration of geospatial Python methods while leveraging Mapbox for first-class interactive visualization. Processing logs are live streamed to the user for extra dorkiness**
 
-🔗 **Live Deployment:** [Offroad Trip Planner](https://offroad-trip-planner-production.up.railway.app/)
+🔗 **Production Deployment:** [Final Route Map](https://offroad-trip-planner-production.up.railway.app/adventure)
+
+🔗 **Develop Sandbox Deployment:** [Create your own Route](https://offroad-trip-planner-develop.up.railway.app/)
 
 ## **📌 Features**
 
@@ -16,6 +18,8 @@
 ---
 
 ## **📡 Data Collection Process**
+
+- **Source dicts:** [Reference layer config as code!](https://github.com/psmyth2/offroad-trip-planner/blob/main/app/reference_layers.py)
 
 ### **📍 1. Trail and Road Data (USFS & BLM)**
 
@@ -81,7 +85,9 @@
 
 To run the Flask app locally, you only need **Docker Desktop installed**. Follow these simple steps:
 
-### **Step 1: Build the Docker Container**
+### **Step 0.5: Get yourself some mapbox, open topograhy and oepn weather api keys!**
+
+### **Step 1: Build the Docker Container (add api keys as env vars inside container)**
 
 ```bash
 docker build -t offroad-trip-planner .
@@ -100,7 +106,5 @@ Once running, visit:
 ```
 http://localhost:5000
 ```
-
-✅ The app is now live locally and fully functional!
 
 ---
