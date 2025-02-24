@@ -14,7 +14,7 @@
 
 - **📍 User-Defined Adventure Areas** → Select a bounding box to define your adventure region.
 - **🛤️ Smart Trail Selection** → Fetches USFS OHV/Offroad trails and roads dynamically using intersections with user-defined adventure area (bbox).
-- **🏠 Trailhead Filtering** → Displays **only trailheads near your route** as POIs.
+- **🏠 Trailhead/POI Filtering** → Displays **only trailheads and POI near your route**.
 - **📊 Elevation & Slope Analysis** → Calculates **route difficulty** (`Easy, Moderate, Difficult`).
 - **🌍 3D Map Visualization** → Uses **MapboxGL terrain** with real-time **POI symbology**.
 - **🚀 Dockerized Flask API** → Easily deployed via **Railway.app** or run locally using Docker.
@@ -34,12 +34,12 @@
 ).
   - Results are stored in **GeoJSON** (`fetched_trails.geojson`).
 
-### **🏠 2. Trailheads as POIs**
+### **🏠 2. Trailheads and POIs**
 
 - **Source:** [USFS Trailheads Dataset](https://data-usfs.hub.arcgis.com/)
 - **Processing:**
-  - System **fetches all trailheads** within the adventure area (**handled in** `data_fetcher.py`).
-  - **Trailheads are filtered** → **Only those within 100m of the final route** are used (geopandas).
+  - System **fetches all trailheads/POIs** within the adventure area (**handled in** `data_fetcher.py`).
+  - **Trailheads and POI are filtered** → **Only those within 100m of the final route** are used (geopandas).
   - Final filtered trailheads are saved in **`filtered_trailheads.geojson`** and used as **POIs**.
 
 ### **🏔️ 3. Elevation & Slope Data**
@@ -78,7 +78,7 @@
 
 ### **Step 3: Trailhead & POI Filtering**
 
-- **Trailheads within 100m of the final route** are extracted and displayed as POIs (**handled in** `data_processor.py`).
+- **Trailhead/POIs within 100m of the final route** are extracted and displayed as POIs (**handled in** `data_processor.py`).
 
 ### **Step 4: Terrain & Slope Analysis**
 
