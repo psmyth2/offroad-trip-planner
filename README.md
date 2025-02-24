@@ -92,6 +92,7 @@
 - The **final enriched route** (with POIs, slope classifications, & elevation data) is displayed on the **interactive 3D Mapbox map**.
 
 ![Trip Planner Demo](https://smythgeospatial.com/wp-content/uploads/2025/02/demo.gif)
+
 ---
 
 ## **🚀 Running Locally with Docker**
